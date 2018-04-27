@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements
         navigationView.getMenu().getItem(1).setActionView(R.layout.menu_dot);
     }
 
+
     private void getStudentFirst(){
         Intent currentIntent = getIntent();
         try {
