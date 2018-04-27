@@ -1,0 +1,14 @@
+{
+  "uri": "http://schoolcon.herokuapp.com/api/auth/sign_in",
+  "method": "POST",
+  "body": "",
+  "headers": {
+    "uid": "Abhichede777@gmail.com",
+    "password": "Admin@123",
+    "token-type": "Bearer",
+    "client": "N5bZEfvPJoVEnXlTwIEtaw",
+    "access-token": "WSJXORSidhKWugOea1y-uA",
+    "expiry": "1524912742",
+    "email": "Abhichede777@gmail.com"
+  }
+}
