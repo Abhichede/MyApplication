@@ -43,6 +43,18 @@ public class Session {
     @Expose
     private int rolesMask;
 
+    public int getStudent_id() {
+        return student_id;
+    }
+
+    public void setStudent_id(int student_id) {
+        this.student_id = student_id;
+    }
+
+    @SerializedName("student_id")
+    @Expose
+    private int student_id;
+
     /**
      * No args constructor for use in serialization
      *
@@ -63,7 +75,7 @@ public class Session {
      * @param provider
      * @param allowPasswordChange
      */
-    public Session(Boolean approved, int id, String email, String provider, String uid, Boolean allowPasswordChange, String name, String nickname, String image, int rolesMask) {
+    public Session(Boolean approved, int id, String email, String provider, String uid, Boolean allowPasswordChange, String name, String nickname, String image, int rolesMask, int student_id) {
         //super();
         this.approved = approved;
         this.id = id;
@@ -75,6 +87,7 @@ public class Session {
         this.nickname = nickname;
         this.image = image;
         this.rolesMask = rolesMask;
+        this.student_id = student_id;
     }
 
     public Session(JSONObject jsonObject) throws JSONException {
@@ -88,6 +101,7 @@ public class Session {
         this.image = jsonObject.getString("image");
         this.allowPasswordChange = jsonObject.getBoolean("allow_password_change");
         this.rolesMask = jsonObject.getInt("roles_mask");
+        this.student_id = jsonObject.getInt("student_id");
     }
 
     public Boolean getApproved() {

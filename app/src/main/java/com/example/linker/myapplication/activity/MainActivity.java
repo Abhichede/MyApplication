@@ -33,6 +33,7 @@ import com.example.linker.myapplication.fragment.MessagesFragment;
 import com.example.linker.myapplication.fragment.AttendanceFragment;
 import com.example.linker.myapplication.fragment.ProfileFragment;
 import com.example.linker.myapplication.fragment.ScheduleFragment;
+import com.example.linker.myapplication.model.Session;
 import com.example.linker.myapplication.other.CircleTransform;
 
 import org.json.JSONException;
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements
     private Toolbar toolbar;
     private FloatingActionButton fab;
 
-    private JSONObject session = null;
+    Session session = null;
 
     // urls to load navigation header background image
     // and profile image
@@ -141,8 +142,8 @@ public class MainActivity extends AppCompatActivity implements
     private void loadNavHeader() throws JSONException {
         // name, website
         if(session != null){
-            txtName.setText(session.getString("name"));
-            txtWebsite.setText(session.getString("email"));
+            txtName.setText(session.getName());
+            txtWebsite.setText(session.getEmail());
         }else{
             txtName.setText(R.string.scon);
             txtWebsite.setText(R.string.myschoolcon_website);
@@ -171,10 +172,10 @@ public class MainActivity extends AppCompatActivity implements
     private void getStudentFirst(){
         Intent currentIntent = getIntent();
         try {
-            session = new JSONObject(currentIntent.getStringExtra("session"));
+            session = new Session(new JSONObject(currentIntent.getStringExtra("session")));
 
             Log.e("Profile URL: ", urlProfileImg);
-            Log.e("Student: ", session.toString());
+            Log.e("Student: ", session.getEmail());
         }catch (Exception e){
             e.printStackTrace();
         }

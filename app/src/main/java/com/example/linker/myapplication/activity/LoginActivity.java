@@ -47,6 +47,8 @@ import java.util.List;
 import com.example.linker.myapplication.R;
 import com.example.linker.myapplication.model.Session;
 import com.example.linker.myapplication.model.SessionResponse;
+import com.example.linker.myapplication.other.HeaderVars;
+import com.example.linker.myapplication.rest.ApiClient;
 import com.example.linker.myapplication.rest.SessionApiService;
 
 import org.json.JSONArray;
@@ -210,14 +212,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // perform the user login attempt.
             showProgress(true);
 
-            if (retrofit == null) {
-
-                retrofit = new Retrofit.Builder()
-                        .baseUrl(BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .build();
-            }
-
+            retrofit = ApiClient.getClient();
             SessionApiService sessionApiService = retrofit.create(SessionApiService.class);
             sessionApiService.getSession(email, email, password).enqueue(new Callback<SessionResponse>() {
                 @Override
@@ -226,6 +221,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     if(response.isSuccessful()){
                         try {
                             authenticatedStudent = new JSONObject(response.body().getData().toString());
+
+                            HeaderVars.setAccessToken(response.headers().get("access-token"));
+                            HeaderVars.setTokenType(response.headers().get("token-type"));
+                            HeaderVars.setClient(response.headers().get("client"));
+                            HeaderVars.setExpiry(response.headers().get("expiry"));
 
                         } catch (JSONException e) {
                             e.printStackTrace();

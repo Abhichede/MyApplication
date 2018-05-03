@@ -4,11 +4,32 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.linker.myapplication.R;
+import com.example.linker.myapplication.activity.MainActivity;
+import com.example.linker.myapplication.model.Profile;
+import com.example.linker.myapplication.model.ProfilePhoto;
+import com.example.linker.myapplication.model.Session;
+import com.example.linker.myapplication.other.HeaderVars;
+import com.example.linker.myapplication.rest.ApiClient;
+import com.example.linker.myapplication.rest.SessionApiService;
+import com.example.linker.myapplication.rest.StudentApiInterface;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.security.auth.callback.Callback;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,6 +50,9 @@ public class ProfileFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    public MainActivity mainActivity;
+    public Session session;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -65,7 +89,49 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_profile, container, false);
+
+
+        try {
+            session = new Session(new JSONObject(getActivity().getIntent().getStringExtra("session")));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final TextView studentName = rootView.findViewById(R.id.user_profile_name);
+        final ImageView studentProfilePhoto = rootView.findViewById(R.id.user_profile_photo);
+
+        StudentApiInterface studentApiService = ApiClient.getClient().create(StudentApiInterface.class);
+
+        studentApiService.getStudentDetails(session.getStudent_id(), session.getUid(),
+                HeaderVars.getAccessToken(), HeaderVars.getTokenType(), HeaderVars.getClient(),
+                HeaderVars.getExpiry()).enqueue(new retrofit2.Callback<Profile>() {
+            @Override
+            public void onResponse(Call<Profile> call, Response<Profile> response) {
+                if(response.isSuccessful()){
+                    studentName.setText(response.body().getFirstName());
+
+                    if(response.body().getProfilePhoto() != null) {
+                        ProfilePhoto.setUrl(response.body().getProfilePhoto().toString());
+                        if(ProfilePhoto.getUrl() != null) {
+                            Glide.with(getActivity()).load(ProfilePhoto.getUrl())
+                                    .crossFade()
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                    .into(studentProfilePhoto);
+                        }
+                    }
+                }else{
+                    Log.e("Error", response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Profile> call, Throwable t) {
+                Log.e("Error", t.getMessage());
+            }
+        });
+
+        return rootView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
