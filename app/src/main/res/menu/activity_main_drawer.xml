@@ -24,6 +24,10 @@
             android:id="@+id/nav_profile"
             android:icon="@drawable/ic_account_circle_black_24px"
             android:title="@string/profile" />
+        <item
+            android:id="@+id/nav_fee_details"
+            android:icon="@drawable/ic_rupee_indian"
+            android:title="@string/Fee" />
     </group>
 
     <item android:title="@string/legal">

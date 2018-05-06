@@ -20,6 +20,7 @@
         <item>Attendance</item>
         <item>Schedules</item>
         <item>Profile</item>
+        <item>Fee Details</item>
     </string-array>
 
     <string name="activity_title_about_us">About Us</string>
@@ -67,4 +68,22 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="date_of_birth">Date of birth</string>
+    <string name="title_activity_profile">Profile</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="gender">Gender</string>
+    <string name="birth_place">Birth Place</string>
+    <string name="blood_group">Blood Group</string>
+    <string name="nationality">Nationality</string>
+    <string name="mother_tongue">Mother Tongue</string>
+    <string name="adhar">Adhar</string>
+    <string name="caste_category">Caste Category</string>
+    <string name="caste">Caste</string>
+    <string name="religion">Religion</string>
+    <string name="medical_history">Medical History</string>
+    <string name="siblings_info">Siblings Info</string>
+    <string name="skills">Skills</string>
+    <string name="disability">Disability</string>
+    <string name="Fee">Fee</string>
 </resources>

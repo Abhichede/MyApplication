@@ -2,6 +2,8 @@ package com.example.linker.myapplication.other;
 
 import android.app.Application;
 
+import com.example.linker.myapplication.model.Profile;
+
 /**
  * Created by linker on 2/5/18.
  */
@@ -13,6 +15,16 @@ public class HeaderVars extends Application {
     static String tokenType;
     static String client;
     static String expiry;
+
+    public static Profile getProfile() {
+        return profile;
+    }
+
+    public static void setProfile(Profile profile) {
+        HeaderVars.profile = profile;
+    }
+
+    static Profile profile;
 
     public static String getAccessToken() {
         return accessToken;

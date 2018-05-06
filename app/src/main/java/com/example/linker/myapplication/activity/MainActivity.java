@@ -2,6 +2,7 @@ package com.example.linker.myapplication.activity;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -28,25 +29,35 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import com.example.linker.myapplication.fragment.FeeDetailsFragment;
 import com.example.linker.myapplication.fragment.HomeFragment;
 import com.example.linker.myapplication.fragment.MessagesFragment;
 import com.example.linker.myapplication.fragment.AttendanceFragment;
 import com.example.linker.myapplication.fragment.ProfileFragment;
 import com.example.linker.myapplication.fragment.ScheduleFragment;
+import com.example.linker.myapplication.model.Profile;
+import com.example.linker.myapplication.model.ProfilePhoto;
 import com.example.linker.myapplication.model.Session;
 import com.example.linker.myapplication.other.CircleTransform;
+import com.example.linker.myapplication.other.HeaderVars;
+import com.example.linker.myapplication.rest.ApiClient;
+import com.example.linker.myapplication.rest.StudentApiInterface;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
 
+import retrofit2.Call;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity implements
         HomeFragment.OnFragmentInteractionListener,
         MessagesFragment.OnFragmentInteractionListener,
         AttendanceFragment.OnFragmentInteractionListener,
         ScheduleFragment.OnFragmentInteractionListener,
-        ProfileFragment.OnFragmentInteractionListener{
+        ProfileFragment.OnFragmentInteractionListener,
+        FeeDetailsFragment.OnFragmentInteractionListener{
 
     private NavigationView navigationView;
     private DrawerLayout drawer;
@@ -55,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements
     private TextView txtName, txtWebsite;
     private Toolbar toolbar;
     private FloatingActionButton fab;
+    CollapsingToolbarLayout collapsingToolbarLayout;
 
     Session session = null;
 
@@ -72,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final String TAG_ATTENDANCE = "attendance";
     private static final String TAG_MESSAGE = "notifications";
     private static final String TAG_PROFILE = "profile";
+    private static final String TAG_FEE = "fee";
 
     public static String CURRENT_TAG = TAG_HOME;
 
@@ -176,6 +189,33 @@ public class MainActivity extends AppCompatActivity implements
 
             Log.e("Profile URL: ", urlProfileImg);
             Log.e("Student: ", session.getEmail());
+
+            if(HeaderVars.getProfile() == null){
+                StudentApiInterface studentApiService = ApiClient.getClient().create(StudentApiInterface.class);
+                studentApiService.getStudentDetails(session.getStudent_id(), session.getUid(),
+                        HeaderVars.getAccessToken(), HeaderVars.getTokenType(), HeaderVars.getClient(),
+                        HeaderVars.getExpiry()).enqueue(new retrofit2.Callback<Profile>() {
+                    @Override
+                    public void onResponse(Call<Profile> call, Response<Profile> response) {
+                        if (response.isSuccessful()) {
+                            HeaderVars.setAccessToken(response.headers().get("Access-Token"));
+                            HeaderVars.setTokenType(response.headers().get("Token-Type"));
+                            HeaderVars.setClient(response.headers().get("Client"));
+                            HeaderVars.setExpiry(response.headers().get("Expiry"));
+
+                            HeaderVars.setProfile(response.body());
+
+                        } else {
+                            Log.e("Error", response.message());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Profile> call, Throwable t) {
+                        Log.e("Error", t.getMessage());
+                    }
+                });
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -251,6 +291,8 @@ public class MainActivity extends AppCompatActivity implements
             case 4:
                 // notifications fragment
                 return new ProfileFragment();
+            case 5:
+                return new FeeDetailsFragment();
             default:
                 return new HomeFragment();
         }
@@ -294,6 +336,10 @@ public class MainActivity extends AppCompatActivity implements
                     case R.id.nav_profile:
                         navItemIndex = 4;
                         CURRENT_TAG = TAG_PROFILE;
+                        break;
+                    case R.id.nav_fee_details:
+                        navItemIndex = 5;
+                        CURRENT_TAG = TAG_FEE;
                         break;
                     case R.id.nav_about_us:
                         // launch new intent instead of loading fragment

@@ -3,23 +3,21 @@ package com.example.linker.myapplication.fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toolbar;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.linker.myapplication.R;
-import com.example.linker.myapplication.activity.MainActivity;
+import com.example.linker.myapplication.model.Fee;
 import com.example.linker.myapplication.model.Profile;
 import com.example.linker.myapplication.model.Session;
+import com.example.linker.myapplication.other.CustomFeeAdapter;
 import com.example.linker.myapplication.other.HeaderVars;
 import com.example.linker.myapplication.rest.ApiClient;
 import com.example.linker.myapplication.rest.StudentApiInterface;
@@ -35,12 +33,12 @@ import retrofit2.Response;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link ProfileFragment.OnFragmentInteractionListener} interface
+ * {@link FeeDetailsFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link ProfileFragment#newInstance} factory method to
+ * Use the {@link FeeDetailsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ProfileFragment extends Fragment {
+public class FeeDetailsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -52,12 +50,16 @@ public class ProfileFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public MainActivity mainActivity;
+    private static RecyclerView.Adapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private static RecyclerView recyclerView;
+    private static ArrayList<Fee> data;
+    private static ArrayList<Integer> removedItems;
+
+    Profile profile;
     public Session session;
 
-    ArrayList<Profile> profileArrayList;
-
-    public ProfileFragment() {
+    public FeeDetailsFragment() {
         // Required empty public constructor
     }
 
@@ -67,11 +69,11 @@ public class ProfileFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment ProfileFragment.
+     * @return A new instance of fragment FeeDetailsFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static ProfileFragment newInstance(String param1, String param2) {
-        ProfileFragment fragment = new ProfileFragment();
+    public static FeeDetailsFragment newInstance(String param1, String param2) {
+        FeeDetailsFragment fragment = new FeeDetailsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -92,36 +94,22 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_profile, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_fee_details, container, false);
 
-        CollapsingToolbarLayout collapsingToolbarLayout = getActivity().findViewById(R.id.htab_collapse_toolbar);
+        recyclerView = (RecyclerView) rootView.findViewById(R.id.fee_recycler_view);
+        recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
+        recyclerView.setHasFixedSize(true);
 
-        collapsingToolbarLayout.setTitle("Profile");
-        Profile profile = HeaderVars.getProfile();
+        layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        profile = HeaderVars.getProfile();
 
         try {
             session = new Session(new JSONObject(getActivity().getIntent().getStringExtra("session")));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        ImageView studentProfilePhoto = rootView.findViewById(R.id.user_profile_photo);
-        final TextView studentName = rootView.findViewById(R.id.user_profile_name);
-        final TextView studentDateOfBirth = rootView.findViewById(R.id.txt_date_of_birth);
-        final TextView studentGender = rootView.findViewById(R.id.txt_gender);
-        final TextView studentBirthPlace = rootView.findViewById(R.id.txt_birth_place);
-        final TextView studentBloodGroup = rootView.findViewById(R.id.txt_blood_group);
-        final TextView studentMotherTongue = rootView.findViewById(R.id.txt_mother_tongue);
-        final TextView studentNationality = rootView.findViewById(R.id.txt_nationality);
-        final TextView studentAdhar = rootView.findViewById(R.id.txt_adhar);
-        final TextView studentCasteCategory = rootView.findViewById(R.id.txt_caste_category);
-        final TextView studentCaste = rootView.findViewById(R.id.txt_caste);
-        final TextView studentReligion = rootView.findViewById(R.id.txt_religion);
-        final TextView studentMedicalHistory = rootView.findViewById(R.id.txt_medical_history);
-        final TextView studentSiblingsInfo = rootView.findViewById(R.id.txt_sibling_info);
-        final TextView studentSkills = rootView.findViewById(R.id.txt_skills);
-        final TextView studentDisability = rootView.findViewById(R.id.txt_disability);
-
         if(profile == null) {
             StudentApiInterface studentApiService = ApiClient.getClient().create(StudentApiInterface.class);
             studentApiService.getStudentDetails(session.getStudent_id(), session.getUid(),
@@ -149,31 +137,8 @@ public class ProfileFragment extends Fragment {
         }
 
         profile = HeaderVars.getProfile();
-        studentName.setText(getFullName(profile.getFirstName(), profile.getMiddleName(), profile.getLastName()));
-        if (profile.getProfilePhoto() != null) {
-            if (profile.getProfilePhoto().getUrl() != null) {
-                Glide.with(getActivity()).load(profile.getProfilePhoto().getUrl())
-                        .crossFade()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(studentProfilePhoto);
-            }
-        }
-
-        studentDateOfBirth.setText(profile.getDateOfBirth());
-        studentGender.setText(profile.getGender());
-        studentBloodGroup.setText(profile.getBloodGroup());
-        studentBirthPlace.setText(profile.getBirthPlace());
-        studentNationality.setText(profile.getNationality());
-        studentMotherTongue.setText(profile.getMotherTongue());
-        studentAdhar.setText(profile.getStudentAdhar());
-        studentCasteCategory.setText(profile.getCasteCategory().getCategory());
-        studentCaste.setText(profile.getCaste().getName());
-        studentReligion.setText(profile.getReligion().getName());
-        studentMedicalHistory.setText(profile.getMedicalHistory());
-        studentSiblingsInfo.setText(profile.getSiblingsSchoolingDetails());
-        studentSkills.setText(profile.getSkillOfChild());
-        studentDisability.setText(profile.getDisabilityOfStudent());
-
+        adapter = new CustomFeeAdapter(profile.getFees());
+        recyclerView.setAdapter(adapter);
 
         return rootView;
     }
@@ -215,9 +180,5 @@ public class ProfileFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-    }
-
-    public String getFullName(String firstName, String middleName, String lastName){
-        return firstName +" "+ middleName +" "+ lastName;
     }
 }
